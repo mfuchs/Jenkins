@@ -1,0 +1,17 @@
+---
+- name: Install required python libraries.
+  apt: "name={{ item }} state=present"
+  with_items:
+    - python-bcrypt
+    - python-passlib
+
+- name: Change password in xml file.
+  lineinfile:
+    dest: "{{ xml_path }}"
+    state: present
+    regexp: "<passwordHash>"
+    line: "<passwordHash>{{ password | jenkins_password_hash }}</passwordHash>"
+  become_user: "{{ owner }}"
+  become: yes
+  notify: restart jenkins
+  when: password != "" and xml_path != "" and owner != ""
